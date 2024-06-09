@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import axios from 'axios';
+import ProductFormFields from './ProductFormFields';
 
 function ProductForm({ setQrCodeUrl }) {
   const [name, setName] = useState('');
@@ -11,6 +13,7 @@ function ProductForm({ setQrCodeUrl }) {
   const [producerAddress, setProducerAddress] = useState('');
   const [producerPhone, setProducerPhone] = useState('');
   const [producerEmail, setProducerEmail] = useState('');
+  const [qrCodeImageUrl, setQrCodeImageUrl] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,92 +33,64 @@ function ProductForm({ setQrCodeUrl }) {
       console.log('Données soumises:', data);
       const response = await axios.post('https://agroscan-pckx.onrender.com/qrcode', { data });
       if (response.status === 200) {
+        console.log('QR Code URL reçu:', response.data.qrCodeURL);
         setQrCodeUrl(response.data.qrCodeURL);
+        setQrCodeImageUrl(response.data.qrCodeURL);
       }
     } catch (error) {
       console.error('Erreur lors de la soumission des données :', error);
     }
   };
 
+  const downloadQRCode = () => {
+    if (qrCodeImageUrl) {
+      const link = document.createElement('a');
+      link.href = qrCodeImageUrl;
+      link.download = 'qrcode.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Nom du produit</label>
-        <input
-          type="text"
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Description</label>
-        <textarea
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        ></textarea>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Prix</label>
-        <input
-          type="text"
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Catégorie</label>
-        <input
-          type="text"
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Nom du producteur</label>
-        <input
-          type="text"
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={producerName}
-          onChange={(e) => setProducerName(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Adresse du producteur</label>
-        <input
-          type="text"
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={producerAddress}
-          onChange={(e) => setProducerAddress(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Téléphone du producteur</label>
-        <input
-          type="text"
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={producerPhone}
-          onChange={(e) => setProducerPhone(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Email du producteur</label>
-        <input
-          type="email"
-          className="mt-1 block w-full border border-gray rounded-md p-2"
-          value={producerEmail}
-          onChange={(e) => setProducerEmail(e.target.value)}
-        />
-      </div>
+      <ProductFormFields
+        name={name}
+        description={description}
+        price={price}
+        category={category}
+        producerName={producerName}
+        producerAddress={producerAddress}
+        producerPhone={producerPhone}
+        producerEmail={producerEmail}
+        setName={setName}
+        setDescription={setDescription}
+        setPrice={setPrice}
+        setCategory={setCategory}
+        setProducerName={setProducerName}
+        setProducerAddress={setProducerAddress}
+        setProducerPhone={setProducerPhone}
+        setProducerEmail={setProducerEmail}
+      />
+
       <button
         type="submit"
-        className="bg-blue text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        className="bg-blue text-white px-4 py-2 rounded-md hover:bg-blue"
       >
         Soumettre
       </button>
+
+      {qrCodeImageUrl && (
+        <>
+          <button
+            onClick={downloadQRCode}
+            className="bg-green b text-white px-4 py-2 rounded-md hover:bg-green"
+          >
+            Télécharger QR Code
+          </button>
+        </>
+      )}
     </form>
   );
 }
